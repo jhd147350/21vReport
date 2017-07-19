@@ -4,6 +4,17 @@ import java.util.Date;
 
 
 public class RemedyTicket {
+	//提交者组
+	//受派组*+
+	//目标日期
+	//SLM 实时状态
+	//关闭日期
+	//SLA 保持
+	//报告来源*
+	//报告来源
+	//提交人*
+	//以上导出数据，均未加入
+	
     @Label("事件 ID*+")
     private String ticketId;
     @Label("标题*")
@@ -12,13 +23,10 @@ public class RemedyTicket {
     private int servity;
     @Label("响应日期+")
     private Date initTime;
-
     @Label("状态*")
     private String status;
-
     @Label("报告日期+")
     private Date reportTime;
-
     @Label("最后解决日期")
     private Date resloveTime;
     @Label("提交日期")
@@ -29,10 +37,8 @@ public class RemedyTicket {
     private String rtcLink;
     @Label("类型*")
     private String ticketType;
-
     @Label("客户评分")
     private Integer satisfaction;
-
     @Label("Uni_Submitter_Group_Level")
     private int SubmitterLevel;
 

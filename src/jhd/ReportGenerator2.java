@@ -242,7 +242,7 @@ public class ReportGenerator2 {
     
     public static void main(String[] args) throws Exception {
         ReportGenerator2 tester = new ReportGenerator2();
-        List<RemedyTicket> tickets = tester.getTicketList("data.txt");
+        List<RemedyTicket> tickets = Utils.getTicketList();
         tester.getAvgTime(tickets, "总体数据", null);
         tester.getSatisfaction(tickets, "总体数据", null);
         System.out.println("L1转出的Ticket数量:" + tickets.stream().filter(ticket -> isNotEmpty(ticket.getRtcLink())).count());
