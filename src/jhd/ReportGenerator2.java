@@ -157,7 +157,52 @@ public class ReportGenerator2 {
         System.out.println();
  
     }
+    
+    public void outputResult(){
+    	output("总工单：");
+    	output("客户工单：");
+    	output("已解决工单：");
+    	output("重开工单：");
+    	output("违反SLA工单：");
+    	output("处理出问题工单：");
+    	output("平均初始响应时间：");
+    	output("平均解决时长：");
+    	output("最长解决时长：");
+    	output("L1创建工单");
+    	output("L1解决工单：");
+    	output("L1转出工单：");
+    	//（数量+平均分）
+    	output("平均客户满意度");
+    	
+    	output("严重等级","数量","平均响应时长");
+    	output("级别1：");
+    	output("级别2：");
+    	output("级别3：");
+    	output("级别4：");
+    	
+    	output("%15s %-3s %-6s %-8s %-11s %-10s","Service","Num","solved","unsolved","avgResponse","avgSolved");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","Remedy:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","Bluemix:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","IoT:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","Cloudant:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","Blueworkslive:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","DashDB:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","IDaaS/SSO:",2,2,2,"fsdfs","dfgdg");
+    	output("%15s %-3d %-6d %-8d %-11s %-10s","MessageHub:",2,2,2,"fsdfs","dfgdg");
+
+    	output("Bluemix:");
+    	output("IoT：");
+    	output("Cloudant：");
+    	output("Blueworks Live：");
+    	output("Dash DB：");
+    	output("IDaaS/SSO：");
+    	output("Blockchain：");
+    	output("MessageHub：");
+    }
  
+    private void output(String format, Object... data ){
+    	System.out.printf(format+"\n",data);
+    }
     public void getAvgTime(List<RemedyTicket> tickets, String prefix, Predicate<RemedyTicket> pre) {
  
         long resloveTime = 0;
@@ -271,5 +316,8 @@ public class ReportGenerator2 {
             List<RemedyTicket> list = tickets2.get(service);
             tester.getAvgTime(list, service, null);
         }
+        
+        //--------
+        tester.outputResult();
     }
 }
