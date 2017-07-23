@@ -2,7 +2,11 @@ package jhd;
 
 import java.util.Date;
 
-
+/**
+ * 
+ * @author jhd147350
+ * 从Remedy中导出的数据项
+ */
 public class RemedyTicket {
 	//提交者组
 	//受派组*+

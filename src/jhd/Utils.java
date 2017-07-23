@@ -85,12 +85,12 @@ public class Utils {
 									//e.printStackTrace();
 									System.err.println(field.getAnnotation(Label.class).value()+":"+strColumn);
 									obj = null;
-
 								}
 							}
 							if (type == Integer.class || type == int.class) {
 
 								try {
+									//剔除所有非数字的字符
 									String regEx = "[^0-9]";
 									Pattern p = Pattern.compile(regEx);
 									Matcher m = p.matcher(strColumn);
