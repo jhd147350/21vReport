@@ -10,41 +10,36 @@ import java.util.List;
  */
 public class ReportData {
 	/**
-	 * all表示前面所有数据
-	 * severity表示reportDataBySeverity的数据
-	 * service表示reportDataByService的数据
+	 * all表示前面所有数据 severity表示reportDataBySeverity的数据 service表示reportDataByService的数据
 	 */
-	public enum MyDataType {  
-		  ALL, SEVERITY, SERVICE  
-		} 
+	public enum MyDataType {
+		ALL, SEV1, SEV2, SEV3, SEV4, Remedy, Bluemix, IoT, Cloudant, DashDB, SSO, Blockchain, MessageHub
+	}
+
 	int allTickets;
 	int customerTickets;
 	int resolvedTickets;
-	int reopenTickets;
-	int outOfSlaTickets;
-	int issueTickets;
+	String reopenTickets = "请人工统计";
+	String outOfSlaTickets;
+	String issueTickets = "请人工统计";
 	String avgIntilaResponseTime;
 	String avgResolvedTime;
 	String maxResolvedTime;
 	int ticketCreatedByL1;
-	int ticketResovledByL1;
-	int ticketTranferredByL1;
+	String ticketResovledByL1 = "请人工统计";
+	String ticketTranferredByL1 = "由于部分L2不使用Remedy，请人工统计";
 	String avgCustomerSatisfaction;
 
 	List<BySeverity> reportDataBySeverity = new ArrayList<>();
 	List<ByService> reportDataByService = new ArrayList<>();
-	// --------
-	/*
-	 * int numOfSev1; int numOfSev2; int numOfSev3; int numOfSev4;
-	 * 
-	 * String avgIntilaResponseTimeOfSev1; String avgIntilaResponseTimeOfSev2;
-	 * String avgIntilaResponseTimeOfSev3; String avgIntilaResponseTimeOfSev4;
-	 */
-
 	// ------------
 
+	public BySeverity getBySeverityInstance() {
+		return new BySeverity();
+	}
+
 	public class BySeverity {
-		int severity;
+		MyDataType severity;
 		int num;
 		String avgIntilaResponseTime;
 
@@ -54,8 +49,12 @@ public class ReportData {
 		}
 	}
 
+	public ByService getByServiceInstance() {
+		return new ByService();
+	}
+
 	public class ByService {
-		String service;
+		MyDataType service;
 		int num;
 		int resolvedNum;
 		int openNum;
@@ -73,7 +72,6 @@ public class ReportData {
 		StringBuffer stringBuffer = new StringBuffer();
 		// 2
 		stringBuffer.append(format("Total", "Data"));
-		stringBuffer.append(format("Total", "Data"));
 		stringBuffer.append(format("All Tickets", allTickets));
 		stringBuffer.append(format("Customer Tickets", customerTickets));
 		stringBuffer.append(format("Resolved Tickets", resolvedTickets));
@@ -88,38 +86,20 @@ public class ReportData {
 		stringBuffer.append(format("Tranferred by L1", ticketTranferredByL1));
 		// （数量+平均分）
 		stringBuffer.append(format("Avg Satisfaction", avgCustomerSatisfaction));
-		stringBuffer.append("----------------------------------------------\n");
+		stringBuffer.append("---------------------------------------------------\n");
 
 		// 3
 		stringBuffer.append(format("SEV", "Num", "avgResponse"));
 		for (BySeverity temp : reportDataBySeverity) {
 			stringBuffer.append(temp.toString());
 		}
-		// stringBuffer.append(reportDataBySeverity.toString());
-		/*
-		 * stringBuffer.append(format("Sev1", "2", "55541545"));
-		 * stringBuffer.append(format("Sev2", "2", "55541545"));
-		 * stringBuffer.append(format("Sev3", "2", "55541545"));
-		 * stringBuffer.append(format("Sev4", "2", "55541545"));
-		 */
-		stringBuffer.append("----------------------------------------------\n");
+		stringBuffer.append("---------------------------------------------------\n");
 		// 6
 		stringBuffer.append(format("Service", "Num", "solved", "unsolved", "avgResponse", "avgSolved"));
 		for (ByService temp : reportDataByService) {
 			stringBuffer.append(temp.toString());
 		}
 
-		/*
-		 * stringBuffer.append(format("Remedy", 2, 2, 2, "fsdfs", "dfgdg"));
-		 * stringBuffer.append(format("Bluemix", 2, 2, 2, "fsdfs", "dfgdg"));
-		 * stringBuffer.append(format("IoT", 2, 2, 2, "fsdfs", "dfgdg"));
-		 * stringBuffer.append(format("Cloudant", 2, 2, 2, "fsdfs", "dfgdg"));
-		 * stringBuffer.append(format("Blueworkslive", 2, 2, 2, "fsdfs",
-		 * "dfgdg")); stringBuffer.append(format("DashDB", 2, 2, 2, "fsdfs",
-		 * "dfgdg")); stringBuffer.append(format("IDaaS/SSO", 2, 2, 2, "fsdfs",
-		 * "dfgdg")); stringBuffer.append(format("MessageHub", 2, 2, 2, "fsdfs",
-		 * "dfgdg"));
-		 */
 		return stringBuffer.toString();
 	}
 
@@ -138,7 +118,7 @@ public class ReportData {
 			str = String.format("%16s: %-3s %-6s %-8s %-11s %-14s\n", data);
 			break;
 		default:
-			System.err.println("err -----------");
+			System.err.println("--- data append err ---");
 			break;
 		}
 		return str;

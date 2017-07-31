@@ -1,330 +1,123 @@
 package jhd;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import jhd.ReportData.ByService;
+import jhd.ReportData.BySeverity;
 import jhd.ReportData.MyDataType;
 
 public class ReportGenerator2 {
 
-	private List<RemedyTicket> getTicketList(String filename) {
+	public void setDataByType(List<RemedyTicket> tickets, MyDataType tag, Predicate<RemedyTicket> pre,
+			ReportData reportData) {
+		long resolveTimeSum = 0;// 解决时长之和
+		long ackTimeSum = 0;// 受理时长之和
+		int num = 0;// 工单总数量
+		int reslovedNum = 0;// 解决的工单总数量
+		int alertNum = 0;// alert总数量
+		int outOfSlaNum = 0;// 超时工单
+		long maxResolveTime = 0;// 最大解决时长
+		int satisfactionNum = 0;// 有满意度的工单数量
+		int satisfactionSum = 0;// 满意度总和
+		int createdByL1Num = 0;// L1创建的工单数量
+		//int resolvedByL1Num = 0;// L1解决的工单数量 TODO 暂时不能计算
+		//int transferedByL1Num = 0;// L1转出去的工单数量 TODO 暂时不能计算
+		List<Integer> totalSatisfactionId = new ArrayList<Integer>();// 有满意度的工单分数集合
+		String maxResolveTimeTicketId = null;// 最大解决时长的工单id
+		List<String> unreslovedTicketId = new ArrayList<String>();// 未解决所有工单id
 
-		List<RemedyTicket> tickets = null;
-		FileReader reader = null;
-		BufferedReader br = null;
-		try {
-			reader = new FileReader("data.txt");
-			br = new BufferedReader(reader);
-			String str = null;
-			Map<String, Field> map = new HashMap<String, Field>();
-			Map<Integer, Field> fmap = new HashMap<Integer, Field>();
-			Field[] fields = RemedyTicket.class.getDeclaredFields();
-
-			// 得到Remedyticket中的注解
-			for (Field field : fields) {
-				Label label = field.getAnnotation(Label.class);
-				if (label != null) {
-					map.put(label.value(), field);
-				}
-			}
-			boolean first = false;
-			tickets = new ArrayList<RemedyTicket>();
-
-			// 一次读取一行数据
-			while ((str = br.readLine()) != null) {
-				// 根据 \t 进行分割数据
-				String[] data = str.split("\\t");
-				// 第一行表头处理如下
-				if (!first) {
-					// 如果是第一行 就把第一行的数据存入fmap，让data中的第一行数据对应起来
-					// TODO 建议将first 设置为true 更加表示第一次
-					for (int i = 0; i < data.length; i++) {
-						String string = data[i];
-						Field field = map.get(string);
-						if (field != null) {
-							fmap.put(i, field);
-						}
-					}
-					first = true;
-				}
-				// 所有数据行的处理如下
-				else {
-					RemedyTicket ticket = new RemedyTicket();
-					for (int i = 0; i < data.length; i++) {
-						Field field = fmap.get(i);
-						if (field != null) {
-							String strdata = data[i];
-							Object obj = null;
-							Class<?> type = field.getType();
-							// TODO 按类型 处理数据，不知道用switch可以解决不
-							if (type == Date.class) {
-								// 处理 这种数据 2017-6-29 22:53:49
-								try {
-									obj = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(strdata);
-								} catch (Exception e) {
-									try {
-										obj = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(strdata);
-									} catch (Exception e1) {
-										e1.printStackTrace();
-										obj = null;
-									}
-								}
-							}
-							if (type == Integer.class || type == int.class) {
-
-								try {
-									String regEx = "[^0-9]";
-									Pattern p = Pattern.compile(regEx);
-									Matcher m = p.matcher(strdata);
-									obj = Integer.parseInt(m.replaceAll("").trim());
-								} catch (Exception e) {
-								}
-							} else if (type == String.class) {
-								obj = strdata;
-							}
-							if (obj != null) {
-								field.setAccessible(true);
-								// 向ticket 对象赋值
-								field.set(ticket, obj);
-							}
-						}
-					}
-					// 将对象添加到数组中
-					tickets.add(ticket);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			// 关闭file和buffer reader
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-			}
-		}
-		return tickets;
-	}
-
-	public void getSatisfaction(List<RemedyTicket> tickets, String prefix, Predicate<RemedyTicket> pre) {
-
-		int num = 0;
-		int totalSatisfaction = 0;
-		List<Integer> totalSatisfactionId = new ArrayList<Integer>();
 		for (RemedyTicket remedyTicket : tickets) {
+			// 有条件的 通过pre判断出来
 			if (pre == null || pre.test(remedyTicket)) {
+				Date initDate = remedyTicket.getInitTime();
+				Date submitDate = remedyTicket.getSubmitTime();
+				Date resloveDate = remedyTicket.getResloveTime();
+				String status = remedyTicket.getStatus();
+				String id = remedyTicket.getTicketId();
+				if ("已解决".equals(status) || "已关闭".equals(status)) {
+					long curReslovedTime = resloveDate.getTime() - submitDate.getTime();
+					resolveTimeSum += curReslovedTime;
+					if (maxResolveTime < curReslovedTime) {
+						maxResolveTime = curReslovedTime;
+						maxResolveTimeTicketId = id;
+					}
+					reslovedNum++;
+				} else {
+					unreslovedTicketId.add(id);
+				}
+
+				if ("alert ticket".equals(remedyTicket.getTicketType())) {
+					alertNum++;
+				}
+				if (initDate != null) {
+					// 响应时间-提交时间为受理时长
+					long ackTime = initDate.getTime() - submitDate.getTime();
+					if (ackTime <= 0) {
+						System.err.println(remedyTicket.getTicketId() + ":响应时间小于提交时间，请检查数据");
+					}
+					outOfSlaNum += isOutOfSLA(remedyTicket.getTicketPriority(), ackTime) ? 1 : 0;// 超15分钟就超时了
+					ackTimeSum += ackTime;
+				}
 				Integer satisfaction = remedyTicket.getSatisfaction();
 				if (satisfaction != null) {
-					num++;
-					totalSatisfaction += satisfaction;
+					satisfactionNum++;
+					satisfactionSum += satisfaction;
 					totalSatisfactionId.add(satisfaction);
 				}
-			}
-		}
-
-		System.out.println(
-				prefix + "评分数量" + num + "," + totalSatisfactionId + "，满意度：" + (double) totalSatisfaction / num);
-
-		System.out.println();
-
-	}
-
-	public void outputResult() {
-		// 2
-		output("Total", "Data");
-		output("All Tickets", "5");
-		output("Customer Tickets", "5");
-		output("Resolved Tickets", "5");
-		output("Reopen Tickets", "5");
-		output("Out of SLA", "5");
-		output("Issue Tickets", "5");
-		output("Avg Response", "5");
-		output("Avg Resolve", "5");
-		output("Maximum Resolve", "21d 15h 17m 9s");
-		output("Created By L1", "5");
-		output("Resolved By L1", "5");
-		output("Tranferred by L1", "5");
-		// （数量+平均分）
-		output("Avg Satisfaction", "545454545");
-		System.out.println("----------------------------------------------");
-
-		// 3
-		output("SEV", "Num", "avgResponse");
-		output("Sev1", "2", "55541545");
-		output("Sev2", "2", "55541545");
-		output("Sev3", "2", "55541545");
-		output("Sev4", "2", "55541545");
-		System.out.println("----------------------------------------------");
-		// 6
-		output("Service", "Num", "solved", "unsolved", "avgResponse", "avgSolved");
-		output("Remedy", 2, 2, 2, "fsdfs", "dfgdg");
-		output("Bluemix", 2, 2, 2, "fsdfs", "dfgdg");
-		output("IoT", 2, 2, 2, "fsdfs", "dfgdg");
-		output("Cloudant", 2, 2, 2, "fsdfs", "dfgdg");
-		output("Blueworkslive", 2, 2, 2, "fsdfs", "dfgdg");
-		output("DashDB", 2, 2, 2, "fsdfs", "dfgdg");
-		output("IDaaS/SSO", 2, 2, 2, "fsdfs", "dfgdg");
-		output("MessageHub", 2, 2, 2, "fsdfs", "dfgdg");
-
-	}
-
-	private void output(Object... data) {
-		if (data == null)
-			return;
-		switch (data.length) {
-		case 2:
-			System.out.printf("%16s: %-14s", data[0], data[1]);
-			break;
-		case 3:
-			System.out.printf("%16s: %-3s %-11s", data[0], data[1], data[2]);
-			break;
-		case 6:
-			System.out.printf("%16s: %-3s %-6s %-8s %-11s %-14s", data[0], data[1], data[2], data[3], data[4], data[5]);
-			break;
-		default:
-			System.err.println("err -----------");
-			break;
-		}
-		System.out.println();
-	}
-
-	public void getDataByType(List<RemedyTicket> tickets, String prefix, Predicate<RemedyTicket> pre) {
-
-		long resloveTime = 0;
-		long initTime = 0;
-		int num = 0;
-		int reslovedNum = 0;
-		long maxTime = 0;
-		String ticketId = null;
-		List<String> unreslovedTicketId = new ArrayList<String>();
-		int alertNum = 0;
-		for (RemedyTicket remedyTicket : tickets) {
-			// 有条件的 通过pre判断出来
-			if (pre == null || pre.test(remedyTicket)) {
-				Date initDate = remedyTicket.getInitTime();
-				Date reportDate = remedyTicket.getReportTime();
-				Date resloveDate = remedyTicket.getResloveTime();
-				String status = remedyTicket.getStatus();
-				String id = remedyTicket.getTicketId();
-				if ("已解决".equals(status) || "已关闭".equals(status)) {
-					long curReslovedTime = resloveDate.getTime() - reportDate.getTime();
-					resloveTime += curReslovedTime;
-					if (maxTime < curReslovedTime) {
-						maxTime = curReslovedTime;
-						ticketId = id;
-					}
-					++reslovedNum;
-				} else {
-					unreslovedTicketId.add(id);
-				}
-				String type = remedyTicket.getTicketType();
-				if ("alert ticket".equals(type)) {
-					alertNum++;
-				}
-				if (initDate != null) {
-					initTime += initDate.getTime() - reportDate.getTime();
+				if (remedyTicket.getSubmitterLevel() == 1) {// L1创建的工单
+					createdByL1Num++;
 				}
 				num++;
 			}
 		}
 
-		System.out.println(prefix + "总数" + num + "，末解决：" + unreslovedTicketId + ",Alert 数量：" + alertNum);
+		String avgIntilaResponseTime = num > 0 ? format(ackTimeSum / num) : "--";
+		String avgResolvedTime = reslovedNum > 0 ? format(resolveTimeSum / reslovedNum) : "--";
 
-		System.out.println("\t平均响应时间：" + (num > 0 ? format(initTime / num) : "--"));
-		System.out.println("\t平均解决时间：" + (reslovedNum > 0 ? format(resloveTime / reslovedNum) : "--"));
-		System.out.println("\t最长解决时间：" + format(maxTime) + " - >" + ticketId);
-		System.out.println();
-	}
-
-	public void setDataByType2(List<RemedyTicket> tickets, MyDataType tag, Predicate<RemedyTicket> pre,
-			ReportData reportData) {
-		long resloveTime = 0;
-		long initTime = 0;
-		int num = 0;
-		int reslovedNum = 0;
-		long maxTime = 0;
-		String ticketId = null;
-		List<String> unreslovedTicketId = new ArrayList<String>();
-		int alertNum = 0;
-		for (RemedyTicket remedyTicket : tickets) {
-			// 有条件的 通过pre判断出来
-			if (pre == null || pre.test(remedyTicket)) {
-				Date initDate = remedyTicket.getInitTime();
-				Date reportDate = remedyTicket.getReportTime();
-				Date resloveDate = remedyTicket.getResloveTime();
-				String status = remedyTicket.getStatus();
-				String id = remedyTicket.getTicketId();
-				if ("已解决".equals(status) || "已关闭".equals(status)) {
-					long curReslovedTime = resloveDate.getTime() - reportDate.getTime();
-					resloveTime += curReslovedTime;
-					if (maxTime < curReslovedTime) {
-						maxTime = curReslovedTime;
-						ticketId = id;
-					}
-					++reslovedNum;
-				} else {
-					unreslovedTicketId.add(id);
-				}
-				String typeStr = remedyTicket.getTicketType();
-				if ("alert ticket".equals(typeStr)) {
-					alertNum++;
-				}
-				if (initDate != null) {
-					initTime += initDate.getTime() - reportDate.getTime();
-				}
-				num++;
-			}
-		}
-
-		System.out.println(tag + "总数" + num + "，末解决：" + unreslovedTicketId + ",Alert 数量：" + alertNum);
-
-		System.out.println("\t平均响应时间：" + (num > 0 ? format(initTime / num) : "--"));
-		System.out.println("\t平均解决时间：" + (reslovedNum > 0 ? format(resloveTime / reslovedNum) : "--"));
-		System.out.println("\t最长解决时间：" + format(maxTime) + " - >" + ticketId);
-		System.out.println();
-
-		//根据不同tag 给不同的成员变量赋值
+		// 根据不同tag 给不同的成员变量赋值
 		switch (tag) {
 		case ALL:
+			reportData.allTickets = num;
+			reportData.customerTickets = num - alertNum;
+			reportData.resolvedTickets = reslovedNum;
+			reportData.outOfSlaTickets = outOfSlaNum + "";
+			reportData.avgIntilaResponseTime = avgIntilaResponseTime;
+			reportData.avgResolvedTime = avgResolvedTime;
+			reportData.maxResolvedTime = format(maxResolveTime) + " ->" + maxResolveTimeTicketId;
+			reportData.ticketCreatedByL1 = createdByL1Num;
+			reportData.avgCustomerSatisfaction = (double) satisfactionSum / satisfactionNum + " " + totalSatisfactionId;
 
 			break;
-		case SEVERITY:
+		case SEV1:
+		case SEV2:
+		case SEV3:
+		case SEV4:
+			BySeverity bySeverity = reportData.getBySeverityInstance();
+			bySeverity.severity = tag;
+			bySeverity.num = num;
+			bySeverity.avgIntilaResponseTime = avgIntilaResponseTime;
+			reportData.reportDataBySeverity.add(bySeverity);
+			// pre.reportData.reportDataBySeverity.add(bySeverity);
 
 			break;
-		case SERVICE:
-
+		case Remedy:
+		case Bluemix:
+		case IoT:
+		case Cloudant:
+		case DashDB:
+		case SSO:
+		case Blockchain:
+		case MessageHub:
+			ByService byService = reportData.getByServiceInstance();
+			byService.service = tag;
+			byService.num = num;
+			byService.resolvedNum = reslovedNum;
+			byService.openNum = num - reslovedNum;
+			byService.avgIntilaResponseTime = avgIntilaResponseTime;
+			byService.avgResolvedTime = avgResolvedTime;
+			reportData.reportDataByService.add(byService);
 			break;
 
 		default:
@@ -367,45 +160,8 @@ public class ReportGenerator2 {
 		return d > 0 ? (d + lab) + " " : "";
 	}
 
-	public static void main(String[] args) throws Exception {
-		ReportGenerator2 tester = new ReportGenerator2();
-		List<RemedyTicket> tickets = Utils.getTicketList();
-		tester.getDataByType(tickets, "总体数据", null);
-		tester.getSatisfaction(tickets, "总体数据", null);
-		System.out
-				.println("L1转出的Ticket数量:" + tickets.stream().filter(ticket -> isNotEmpty(ticket.getRtcLink())).count());
-
-		System.out.println("L2转出L3的Ticket数量:" + tickets.stream()
-				.filter(ticket -> ticket.getSubmitterLevel() == 2 && isNotEmpty(ticket.getRtcLink())).count());
-
-		tester.getDataByType(tickets, "SEV 1的", ticket -> ticket.getServity() == 1);
-		tester.getDataByType(tickets, "SEV 2的", ticket -> ticket.getServity() == 2);
-		tester.getDataByType(tickets, "SEV 3的", ticket -> ticket.getServity() == 3);
-		tester.getDataByType(tickets, "SEV 4的", ticket -> ticket.getServity() == 4);
-
-		Map<String, List<RemedyTicket>> tickets2 = new HashMap<String, List<RemedyTicket>>();
-
-		for (RemedyTicket remedyTicket : tickets) {
-			String service = remedyTicket.getService();
-			List<RemedyTicket> list = tickets2.get(service);
-			if (list == null) {
-				list = new ArrayList<RemedyTicket>();
-			}
-			list.add(remedyTicket);
-			tickets2.put(remedyTicket.getService(), list);
-		}
-
-		Set<String> keys = tickets2.keySet();
-		for (String service : keys) {
-			List<RemedyTicket> list = tickets2.get(service);
-			tester.getDataByType(list, service, null);
-		}
-
-		// --------
-		// tester.outputResult();
-
-		ReportData reportData = new ReportData();
-		System.out.println(reportData.toString());
-
+	public boolean isOutOfSLA(int priority, long ackTime) {
+		long sla_time = SLA.SLA_MAP.get(priority);
+		return ackTime > sla_time ? true : false;
 	}
 }

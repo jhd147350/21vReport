@@ -30,7 +30,7 @@ public class ReportGenerator {
         FileReader reader = null;
         BufferedReader br = null;
         try {
-            reader = new FileReader("data.txt");
+            reader = new FileReader("data2.txt");
             br = new BufferedReader(reader);
             String str = null;
             Map<String, Field> map = new HashMap<String, Field>();
@@ -123,7 +123,7 @@ public class ReportGenerator {
  
     public static void main(String[] args) throws Exception {
         ReportGenerator tester = new ReportGenerator();
-        List<RemedyTicket> tickets = tester.getTicketList("data.txt");
+        List<RemedyTicket> tickets = tester.getTicketList("data2.txt");
         tester.getAvgTime(tickets, "总体数据", null);
         tester.getSatisfaction(tickets, "总体数据", null);
         System.out.println("L1转出的Ticket数量:" + tickets.stream().filter(ticket -> isNotEmpty(ticket.getRtcLink())).count());

@@ -82,8 +82,9 @@ public class Utils {
 									obj = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(strColumn);
 								} catch (Exception e) {
 
+									// TODO 忽略
 									//e.printStackTrace();
-									System.err.println(field.getAnnotation(Label.class).value()+":"+strColumn);
+									//System.err.println(field.getAnnotation(Label.class).value()+":"+strColumn);
 									obj = null;
 								}
 							}
