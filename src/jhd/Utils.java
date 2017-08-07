@@ -50,7 +50,7 @@ public class Utils {
 				// 根据 \t 进行分割数据
 				String[] data = strRow.split("\\t");
 				/*for (String temp : data) {
-					//System.err.print(temp + "|");
+					//System.out.print(temp + "|");
 				}
 				System.out.println();*/
 
@@ -84,7 +84,7 @@ public class Utils {
 
 									// TODO 忽略
 									//e.printStackTrace();
-									//System.err.println(field.getAnnotation(Label.class).value()+":"+strColumn);
+									//System.out.println(field.getAnnotation(Label.class).value()+":"+strColumn);
 									obj = null;
 								}
 							}

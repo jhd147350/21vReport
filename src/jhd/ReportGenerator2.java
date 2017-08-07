@@ -55,7 +55,7 @@ public class ReportGenerator2 {
 					// 响应时间-提交时间为受理时长
 					long ackTime = initDate.getTime() - submitDate.getTime();
 					if (ackTime < 0) {
-						System.err.println(remedyTicket.getTicketId() + ":响应时间小于提交时间，请检查数据");
+						System.out.println(remedyTicket.getTicketId() + ":响应时间小于提交时间，请检查数据");
 					}
 					outOfSlaNum += isOutOfSLA(remedyTicket.getTicketPriority(), ackTime) ? 1 : 0;// 超15分钟就超时了
 					ackTimeSum += ackTime;
@@ -88,7 +88,6 @@ public class ReportGenerator2 {
 			reportData.maxResolvedTime = format(maxResolveTime) + " ->" + maxResolveTimeTicketId;
 			reportData.ticketCreatedByL1 = createdByL1Num;
 			reportData.avgCustomerSatisfaction = (double) satisfactionSum / satisfactionNum + " " + totalSatisfactionId;
-
 			break;
 		case SEV1:
 		case SEV2:

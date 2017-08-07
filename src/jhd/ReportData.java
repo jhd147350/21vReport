@@ -86,14 +86,14 @@ public class ReportData {
 		stringBuffer.append(format("Tranferred by L1", ticketTranferredByL1));
 		// （数量+平均分）
 		stringBuffer.append(format("Avg Satisfaction", avgCustomerSatisfaction));
-		stringBuffer.append("---------------------------------------------------\n");
+		stringBuffer.append("---------------------------------------------------\r\n");
 
 		// 3
 		stringBuffer.append(format("SEV", "Num", "avgResponse"));
 		for (BySeverity temp : reportDataBySeverity) {
 			stringBuffer.append(temp.toString());
 		}
-		stringBuffer.append("---------------------------------------------------\n");
+		stringBuffer.append("---------------------------------------------------\r\n");
 		// 6
 		stringBuffer.append(format("Service", "Num", "solved", "unsolved", "avgResponse", "avgSolved"));
 		for (ByService temp : reportDataByService) {
@@ -109,16 +109,16 @@ public class ReportData {
 		String str = null;
 		switch (data.length) {
 		case 2:
-			str = String.format("%16s: %-14s\n", data);
+			str = String.format("%16s: %-14s\r\n", data);
 			break;
 		case 3:
-			str = String.format("%16s: %-3s %-11s\n", data);
+			str = String.format("%16s: %-3s %-11s\r\n", data);
 			break;
 		case 6:
-			str = String.format("%16s: %-3s %-6s %-8s %-11s %-14s\n", data);
+			str = String.format("%16s: %-3s %-6s %-8s %-11s %-14s\r\n", data);
 			break;
 		default:
-			System.err.println("--- data append err ---");
+			System.out.println("--- data append err ---");
 			break;
 		}
 		return str;

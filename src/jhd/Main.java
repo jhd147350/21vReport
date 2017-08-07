@@ -1,5 +1,6 @@
 package jhd;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,7 @@ public class Main {
 			tester.setDataByType(tickets, temp, myData.get(temp), reportData);
 		}
 
+		System.out.println(LocalDateTime.now());
 		System.out.println(reportData.toString());
 	}
 

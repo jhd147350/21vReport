@@ -6,8 +6,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
@@ -69,7 +67,8 @@ public class ReportGenerator {
 								try {
 									obj = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(strdata);
 								} catch (Exception e) {
-									System.err.println(ticket.getTicketId() + ":字段格式不正确" + field.getName());
+									System.out.print(ticket.getTicketId() + ":字段格式不正确" + field.getName());
+									System.out.println("  "+field.getAnnotation(Label.class).value()+":"+strdata);
 									field.getName();
 									obj = null;
 								}
