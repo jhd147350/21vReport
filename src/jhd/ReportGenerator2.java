@@ -54,7 +54,7 @@ public class ReportGenerator2 {
 				if (initDate != null) {
 					// 响应时间-提交时间为受理时长
 					long ackTime = initDate.getTime() - submitDate.getTime();
-					if (ackTime <= 0) {
+					if (ackTime < 0) {
 						System.err.println(remedyTicket.getTicketId() + ":响应时间小于提交时间，请检查数据");
 					}
 					outOfSlaNum += isOutOfSLA(remedyTicket.getTicketPriority(), ackTime) ? 1 : 0;// 超15分钟就超时了
